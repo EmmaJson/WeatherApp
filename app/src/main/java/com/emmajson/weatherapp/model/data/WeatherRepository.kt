@@ -7,76 +7,57 @@ import android.util.Log
 import com.emmajson.weatherapp.model.database.WeatherDatabaseHelper
 import com.emmajson.weatherapp.model.network.RetrofitClient.weatherService
 import com.emmajson.weatherapp.model.network.TimeSeries
-import com.emmajson.weatherapp.model.network.WeatherResponse
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import com.emmajson.weatherapp.network.WeatherRetriever
 
 class WeatherRepository(private val context: Context) {
-
-    private val weatherRetriever = WeatherRetriever()
     private val databaseHelper = WeatherDatabaseHelper(context)
 
     /**
      * Fetches weather data from the network or database.
      * Returns a List<TimeSeries> or an empty list if something goes wrong.
      */
-    suspend fun getWeatherData(lat: Double, lon: Double): List<TimeSeries> {
+    suspend fun getWeatherData(lon: Double, lat: Double): List<TimeSeries> {
+        return if (isNetworkAvailable()) {
+            fetchFromNetwork(lon, lat)
+        } else {
+            fetchFromDatabase()
+        }
+    }
+
+    /**
+     * Fetches weather data using Retrofit.
+     */
+    private suspend fun fetchFromNetwork(lon: Double, lat: Double): List<TimeSeries> {
+        val lonLat = "lon/$lon/lat/$lat"
+        val call = weatherService.getWeather(lonLat)
+
         return try {
-            // Fetch data from the network
-            val networkData = weatherRetriever.getWeather(lat, lon)
-            if (networkData.isNotEmpty()) {
-                // Save to the database for offline access
-                databaseHelper.insertWeatherData(networkData)
-                networkData
+            val response = call.execute()
+            if (response.isSuccessful && response.body() != null) {
+                val weatherResponse = response.body()!!
+                // Save data to the database for offline access
+                databaseHelper.insertWeatherData(weatherResponse.timeSeries)
+                weatherResponse.timeSeries
             } else {
-                // Fallback to the database if network data is empty
-                databaseHelper.getAllWeatherData()
+                Log.e("WeatherRepository", "API Error: ${response.code()}")
+                fetchFromDatabase()
             }
         } catch (e: Exception) {
-            // Fallback to the database if network request fails
-            databaseHelper.getAllWeatherData()
+            Log.e("WeatherRepository", "Network Error: ${e.message}")
+            fetchFromDatabase()
         }
     }
 
-    fun fetchFromNetwork(lat: Double, lon: Double, callback: (List<TimeSeries>?) -> Unit) {
-        val call = weatherService.getWeather(lat, lon)
-
-        call.enqueue(object : Callback<WeatherResponse> {
-            override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
-                if (response.isSuccessful) {
-                    val weatherResponse = response.body()
-                    if (weatherResponse != null) {
-                        // Save to database and pass data to callback
-                        databaseHelper.insertWeatherData(weatherResponse.timeSeries)
-                        callback(weatherResponse.timeSeries)
-                    } else {
-                        Log.e("WeatherRepository", "Response body is null")
-                        callback(null)
-                    }
-                } else {
-                    Log.e("WeatherRepository", "Error: ${response.code()}")
-                    fetchFromDatabase(callback)
-                }
-            }
-
-            override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
-                Log.e("WeatherRepository", "Network error: ${t.message}")
-                fetchFromDatabase(callback)
-            }
-        })
-    }
-
-    private fun fetchFromDatabase(callback: (List<TimeSeries>?) -> Unit) {
+    /**
+     * Fetches weather data from the local database.
+     */
+    private fun fetchFromDatabase(): List<TimeSeries> {
         val data = databaseHelper.getAllWeatherData()
-        if (data.isNotEmpty()) {
-            callback(data)
-        } else {
-            callback(null)
-        }
+        return if (data.isNotEmpty()) data else emptyList()
     }
 
+    /**
+     * Checks if the network is available.
+     */
     private fun isNetworkAvailable(): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val network = connectivityManager.activeNetwork

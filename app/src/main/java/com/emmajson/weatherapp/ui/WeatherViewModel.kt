@@ -27,10 +27,10 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     /**
      * Fetches weather data for a given latitude and longitude.
      */
-    fun fetchWeather(lat: Double, lon: Double) {
+    fun fetchWeather(lon: Double, lat: Double) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val data = weatherRepository.getWeatherData(lat, lon)
+                val data = weatherRepository.getWeatherData(lon, lat)
                 if (data.isNotEmpty()) {
                     _weatherData.postValue(data)
                 } else {

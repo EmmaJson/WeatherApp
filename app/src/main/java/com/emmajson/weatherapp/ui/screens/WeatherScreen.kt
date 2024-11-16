@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.emmajson.weatherapp.ui.screens
 
 import android.os.Build
@@ -30,7 +28,7 @@ fun WeatherScreen(viewModel: WeatherViewModel) {
     val totalItems = 7
 
     LaunchedEffect(weatherData) {
-        viewModel.fetchWeather(14.333,60.383)
+        viewModel.fetchWeather(lon = 14.333, lat = 60.383)
     }
     // Gradually increase the loaded items count with a delay
     LaunchedEffect(weatherData) {

@@ -1,10 +1,5 @@
 package com.emmajson.weatherapp.model.network
 
-data class Geometry(
-    val type: String,
-    val coordinates: List<List<Double>>
-)
-
 data class Parameter(
     val name: String,
     val levelType: String,
