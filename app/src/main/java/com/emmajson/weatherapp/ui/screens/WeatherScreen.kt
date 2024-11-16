@@ -13,6 +13,8 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.emmajson.weatherapp.model.navigation.Screen
 import com.emmajson.weatherapp.ui.screencomponents.WeatherItem
 import com.emmajson.weatherapp.ui.screencomponents.WeatherItemShimmer
 import com.emmajson.weatherapp.viewmodel.WeatherViewModel
@@ -21,7 +23,7 @@ import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun WeatherScreen(viewModel: WeatherViewModel) {
+fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
     // Observe the weather data from the ViewModel
     val weatherData by viewModel.weatherData.observeAsState()
     var loadedItemsCount by remember { mutableStateOf(0) }
@@ -96,7 +98,10 @@ fun WeatherScreen(viewModel: WeatherViewModel) {
                 items(dailyForecasts.entries.take(totalItems)) { (date, forecast) ->
                     val index = dailyForecasts.keys.indexOf(date)
                     if (index < loadedItemsCount) {
-                        WeatherItem(date, forecast.first, forecast.second, forecast.third)
+                        WeatherItem(date, forecast.first, forecast.second, forecast.third) {
+                            viewModel.setSelectedDayForecast(index)
+                            navController.navigate(Screen.DetailScreen.createRoute(index))
+                        }
                     } else {
                         WeatherItemShimmer()
                     }

@@ -50,6 +50,9 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.runtime:runtime-livedata:1.5.1")
 
+    // Navigation (2.4.0 because I target API 33)
+    implementation("androidx.navigation:navigation-compose:2.4.0")
+
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("androidx.datastore:datastore-preferences:1.0.0")

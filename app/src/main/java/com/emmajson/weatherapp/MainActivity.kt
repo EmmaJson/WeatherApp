@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.emmajson.weatherapp.model.navigation.Navigation
 import com.emmajson.weatherapp.ui.screens.WeatherScreen
 import com.emmajson.weatherapp.ui.theme.WeatherAppTheme
 import com.emmajson.weatherapp.viewmodel.WeatherViewModel
@@ -35,7 +36,7 @@ class MainActivity : ComponentActivity() {
                     //weatherModel.threadTest()
                     //weatherModel.isNetworkAvailable()
                     // Start the WeatherScreen with the ViewModel
-                    WeatherScreen(viewModel = viewModel)
+                    Navigation(vm = viewModel)
                 }
             }
         }

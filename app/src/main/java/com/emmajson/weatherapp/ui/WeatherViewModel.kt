@@ -10,6 +10,8 @@ import androidx.lifecycle.viewModelScope
 import com.emmajson.weatherapp.model.network.TimeSeries
 import com.emmajson.weatherapp.repository.WeatherRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class WeatherViewModel(application: Application) : AndroidViewModel(application) {
@@ -23,6 +25,9 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     // LiveData for error messages
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
+
+    private val _selectedDayForecast = MutableStateFlow<TimeSeries?>(null)
+    val selectedDayForecast: StateFlow<TimeSeries?> = _selectedDayForecast
 
     /**
      * Fetches weather data for a given latitude and longitude.
@@ -40,6 +45,11 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                 _errorMessage.postValue("Failed to fetch weather data: ${e.message}")
             }
         }
+    }
+
+    fun setSelectedDayForecast(dayIndex: Int) {
+        val selectedForecast = _weatherData.value?.getOrNull(dayIndex)
+        _selectedDayForecast.value = selectedForecast
     }
 }
 
