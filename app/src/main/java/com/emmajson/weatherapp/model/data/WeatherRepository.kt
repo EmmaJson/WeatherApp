@@ -17,9 +17,22 @@ class WeatherRepository(private val context: Context) {
      */
     suspend fun getWeatherData(lon: Double, lat: Double): List<TimeSeries> {
         return if (isNetworkAvailable()) {
-            fetchFromNetwork(lon, lat)
+            try {
+                fetchFromNetwork(lon, lat)
+            } catch (e: Exception) {
+                handleFallback(lon, lat, "Network error, falling back to cached data: ${e.message}")
+            }
         } else {
-            fetchFromDatabase()
+            handleFallback(lon, lat, "No network connection. Loading cached data.")
+        }
+    }
+
+    private suspend fun handleFallback(lon: Double, lat: Double, errorMessage: String): List<TimeSeries> {
+        Log.w("WeatherRepository", errorMessage)
+        return fetchFromDatabase().also {
+            if (it.isEmpty()) {
+                throw Exception("No cached data available.")
+            }
         }
     }
 
@@ -27,14 +40,12 @@ class WeatherRepository(private val context: Context) {
      * Fetches weather data using Retrofit.
      */
     private suspend fun fetchFromNetwork(lon: Double, lat: Double): List<TimeSeries> {
-        val lonLat = "lon/$lon/lat/$lat"
-        val call = weatherService.getWeather(lonLat)
-
+        val call = weatherService.getWeather(lon, lat)
+        Log.d("WeatherRepository", "Full URL: ${call.request().url()}")
         return try {
             val response = call.execute()
             if (response.isSuccessful && response.body() != null) {
                 val weatherResponse = response.body()!!
-                // Save data to the database for offline access
                 databaseHelper.insertWeatherData(weatherResponse.timeSeries)
                 weatherResponse.timeSeries
             } else {

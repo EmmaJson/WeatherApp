@@ -2,6 +2,7 @@ package com.emmajson.weatherapp.ui.screencomponents
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,14 +22,15 @@ import androidx.compose.ui.unit.dp
 import com.emmajson.weatherapp.R
 
 @Composable
-fun WeatherItem(date: String, minTemp: Double?, maxTemp: Double?, weatherSymbol: Double?) {
+fun WeatherItem(date: String, minTemp: Double?, maxTemp: Double?, weatherSymbol: Double?, onClick: () -> Unit) {
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
             .background(Color(0xFF0D47A1), shape = RoundedCornerShape(8.dp))
-            .padding(16.dp),
+            .padding(16.dp)
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
@@ -61,7 +63,6 @@ fun WeatherItem(date: String, minTemp: Double?, maxTemp: Double?, weatherSymbol:
             modifier = Modifier.size(50.dp)
         )
     }
-
 }
 
 // Helper function to get the correct drawable resource based on the weather symbol

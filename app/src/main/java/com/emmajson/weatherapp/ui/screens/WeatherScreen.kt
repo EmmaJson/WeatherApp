@@ -13,22 +13,28 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.emmajson.weatherapp.model.navigation.Screen
 import com.emmajson.weatherapp.ui.screencomponents.WeatherItem
 import com.emmajson.weatherapp.ui.screencomponents.WeatherItemShimmer
 import com.emmajson.weatherapp.viewmodel.WeatherViewModel
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun WeatherScreen(viewModel: WeatherViewModel) {
+fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
     // Observe the weather data from the ViewModel
     val weatherData by viewModel.weatherData.observeAsState()
+    val errorMessage by viewModel.errorMessage.observeAsState()
+    val searchedCity by viewModel.searchedCity.observeAsState() // For LiveData
     var loadedItemsCount by remember { mutableStateOf(0) }
     val totalItems = 7
 
     LaunchedEffect(weatherData) {
-        viewModel.fetchWeather(lon = 14.333, lat = 60.383)
+        viewModel.searchAndUpdateWeather(searchedCity.toString())
+        //viewModel.searchAndUpdateWeather("Stockholm")
     }
     // Gradually increase the loaded items count with a delay
     LaunchedEffect(weatherData) {
@@ -44,6 +50,33 @@ fun WeatherScreen(viewModel: WeatherViewModel) {
             .background(Color(0xFF0089FF))
             .padding(16.dp)
     ) {
+    // Search Bar
+        TextField(
+            value = searchedCity ?: "",
+            onValueChange = { newCityName ->
+                viewModel.searchAndUpdateWeather(newCityName)
+            },
+            label = { Text("Search City") },
+            placeholder = { Text("Enter city name") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            singleLine = true
+        )
+
+        Button(
+            onClick = {
+                val cityName = searchedCity.orEmpty()
+                if (cityName.isNotBlank()) {
+                    viewModel.searchAndUpdateWeather(cityName)
+                } else {
+                    Log.e("WeatherScreen", "City name is empty")
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Search")
+        }
         Text(
             text = "7-Day Forecast",
             style = MaterialTheme.typography.headlineSmall,
@@ -66,7 +99,8 @@ fun WeatherScreen(viewModel: WeatherViewModel) {
             }
 
             // Define the start date and filter data for the next 7 days
-            val currentDate = LocalDate.of(2021, 11, 3)
+            //val currentDate = LocalDate.of(2021, 11, 3)
+            val currentDate = LocalDate.now()
             val filteredTimeSeries = timeSeries.filter {
                 val forecastDate = LocalDate.parse(it.validTime.substring(0, 10))
                 !forecastDate.isBefore(currentDate) && forecastDate.isBefore(currentDate.plusDays(7))
@@ -96,7 +130,11 @@ fun WeatherScreen(viewModel: WeatherViewModel) {
                 items(dailyForecasts.entries.take(totalItems)) { (date, forecast) ->
                     val index = dailyForecasts.keys.indexOf(date)
                     if (index < loadedItemsCount) {
-                        WeatherItem(date, forecast.first, forecast.second, forecast.third)
+                        WeatherItem(date, forecast.first, forecast.second, forecast.third) {
+                            viewModel.setSelectedDayForecast(index)
+                            Log.d("WeatherScreen", "Navigating to DetailScreen with dayIndex: $index")
+                            navController.navigate(Screen.DetailScreen.createRoute(index))
+                        }
                     } else {
                         WeatherItemShimmer()
                     }
