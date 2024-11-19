@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+import kotlinx.coroutines.Job
+
 class WeatherViewModel(application: Application) : AndroidViewModel(application) {
 
     private val weatherRepository = WeatherRepository(application)
@@ -33,34 +35,37 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     val selectedDayForecast: StateFlow<TimeSeries?> = _selectedDayForecast
 
     // Searched data
-    private val _searchedCity = MutableLiveData<String?>("Stockholm") // Default value
+    private val _searchedCity = MutableLiveData<String?>("") // Default value
     val searchedCity: LiveData<String?> = _searchedCity
+
+    // Job to manage continuous fetching
+    private var continuousFetchingJob: Job? = null
+
+    // Update searched city and start new continuous fetching
+    fun setSearchedCity(city: String) {
+        if(city != searchedCity.value) {
+            _searchedCity.postValue(city)
+            continuousFetchingJob?.cancel()  // Cancel any existing job before starting a new one
+            searchAndUpdateWeather(city)
+            Log.d("WeatherViewModel", "New City entered: $city")
+        } else {
+            Log.d("WeatherViewModel", "Same City entered: $city")
+        }
+    }
 
     // StateFlow for continuous updates
     private val _weatherFlow = MutableStateFlow<List<TimeSeries>?>(null)
     val weatherFlow: StateFlow<List<TimeSeries>?> = _weatherFlow
 
-    private var isContinuousFetchingStarted = false
-
+    /**
+     * Start continuous fetching of weather data for a given latitude and longitude.
+     */
     private fun startContinuousFetching(lon: Double, lat: Double) {
-        if (isContinuousFetchingStarted) return // Prevent multiple loops
-        isContinuousFetchingStarted = true
-
-        viewModelScope.launch(Dispatchers.IO) {
+        continuousFetchingJob?.cancel() // Cancel the ongoing job if any
+        continuousFetchingJob = viewModelScope.launch(Dispatchers.IO) {
             while (true) {
-                try {
-                    val data = weatherRepository.getWeatherData(lon, lat)
-                    Log.d("WeatherViewModel", "Fetched weather data: $data")
-                    _weatherData.postValue(data)
-
-                    // Optional: Write to the database only if needed
-                    // Uncomment below line if database caching is required
-                    // weatherRepository.cacheWeatherData(data)
-                } catch (e: Exception) {
-                    Log.e("WeatherViewModel", "Error fetching weather: ${e.message}")
-                    _errorMessage.postValue("Error: ${e.message}")
-                }
-                delay(60000) // Update every minute
+                fetchWeather(lon, lat)
+                delay(60000 * 10) // Update every 10 minutes
             }
         }
     }
@@ -87,12 +92,15 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
         _selectedDayForecast.value = selectedForecast
     }
 
+    /**
+     * Fetches coordinates for a city and starts fetching weather data for it.
+     */
     fun searchAndUpdateWeather(cityName: String) {
         if (cityName.isBlank()) {
             _errorMessage.postValue("City name cannot be empty.")
             return
         }
-        _searchedCity.postValue(cityName) // Update searchedCity before fetching data
+        // Fetch coordinates for the given city and start continuous fetching
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 fetchCoordinates(

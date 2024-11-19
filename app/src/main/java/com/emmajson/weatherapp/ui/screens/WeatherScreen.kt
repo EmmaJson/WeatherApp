@@ -32,9 +32,15 @@ fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
     var loadedItemsCount by remember { mutableStateOf(0) }
     val totalItems = 7
 
+    var cityName by remember { mutableStateOf("") }
+
+
     LaunchedEffect(weatherData) {
-        viewModel.searchAndUpdateWeather(searchedCity.toString())
-        //viewModel.searchAndUpdateWeather("Stockholm")
+        if (viewModel.searchedCity.value.isNullOrEmpty()) {
+            viewModel.setSearchedCity("Stockholm") // Set to default if no value
+        } else {
+            viewModel.setSearchedCity(searchedCity.toString())
+        }
     }
     // Gradually increase the loaded items count with a delay
     LaunchedEffect(weatherData) {
@@ -52,9 +58,9 @@ fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
     ) {
     // Search Bar
         TextField(
-            value = searchedCity ?: "",
+            value = cityName,
             onValueChange = { newCityName ->
-                viewModel.searchAndUpdateWeather(newCityName)
+                cityName = newCityName // Update local state
             },
             label = { Text("Search City") },
             placeholder = { Text("Enter city name") },
@@ -66,8 +72,9 @@ fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
 
         Button(
             onClick = {
-                val cityName = searchedCity.orEmpty()
                 if (cityName.isNotBlank()) {
+                    Log.d("WeatherScreen", "User input city: $cityName")
+                    viewModel.setSearchedCity(cityName)
                     viewModel.searchAndUpdateWeather(cityName)
                 } else {
                     Log.e("WeatherScreen", "City name is empty")
@@ -77,6 +84,7 @@ fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
         ) {
             Text("Search")
         }
+
         Text(
             text = "7-Day Forecast",
             style = MaterialTheme.typography.headlineSmall,
