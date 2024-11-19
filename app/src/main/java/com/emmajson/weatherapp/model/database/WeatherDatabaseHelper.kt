@@ -80,8 +80,6 @@ class WeatherDatabaseHelper(context: Context) : SQLiteOpenHelper(
         }
     }
 
-
-
     fun getAllWeatherData(): List<TimeSeries> {
         Log.d("WeatherDatabaseHelper", "Fetching all weather data from database")
         val db = readableDatabase

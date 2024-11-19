@@ -8,19 +8,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-// Retrofit Interface for SMHI API
-/*interface GEOApi {
-    //@GET("wpta/backend_solr/autocomplete/search")
-    //fun getCoordinates(@Query("place") place: String): Call<List<PlaceResponse>>
-
-    @GET("weather/search")
-    fun getCoordinates(@Query("location") place: String): Call<List<PlaceResponse>>
-}*/
 interface GeoAPI {
     @GET("search")
     fun getCoordinates(@Query("q") place: String): Call<List<GeocodeResponse>>
 }
-
 
 // Data Model for SMHI Response
 data class GeocodeResponse(
