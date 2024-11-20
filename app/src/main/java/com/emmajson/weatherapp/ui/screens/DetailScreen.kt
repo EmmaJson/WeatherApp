@@ -4,9 +4,7 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -24,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.emmajson.weatherapp.model.navigation.Screen
 import com.emmajson.weatherapp.model.network.TimeSeries
 import com.emmajson.weatherapp.ui.screencomponents.WeatherHourlyItem
 import com.emmajson.weatherapp.viewmodel.WeatherViewModel
@@ -37,14 +34,6 @@ fun DetailScreen(
     navController: NavController
 ) {
     val weatherData by viewModel.weatherData.observeAsState()
-    val searchedCity by viewModel.searchedCity.observeAsState()
-
-    LaunchedEffect(dayIndex) {
-        Log.d("DetailScreen", "Received dayIndex: $dayIndex")
-        if (!searchedCity.isNullOrBlank() && weatherData.isNullOrEmpty()) {
-            viewModel.searchAndUpdateWeather(searchedCity!!)
-        }
-    }
 
     Column(
         modifier = Modifier

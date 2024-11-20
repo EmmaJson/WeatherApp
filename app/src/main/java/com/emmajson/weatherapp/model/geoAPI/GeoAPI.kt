@@ -1,17 +1,20 @@
 package com.emmajson.weatherapp.model.geoAPI
 
+import android.util.Log
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface GeoAPI {
-    @GET("search")
-    fun getCoordinates(@Query("q") place: String): Call<List<GeocodeResponse>>
+    @GET("{place}")
+    fun getCoordinates(@Path("place") place: String): Call<List<GeocodeResponse>>
 }
+
 
 // Data Model for SMHI Response
 data class GeocodeResponse(
@@ -22,10 +25,10 @@ data class GeocodeResponse(
 
 // Retrofit Client for SMHI API
 object RetrofitClient {
-    private const val GEOCODE_BASE_URL = "https://geocode.maps.co/"
+    private const val SMHI_BASE_URL = "https://www.smhi.se/wpt-a/backend_solr/autocomplete/search/"
 
     val geocodeRetrofit: Retrofit = Retrofit.Builder()
-        .baseUrl(GEOCODE_BASE_URL)
+        .baseUrl(SMHI_BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -47,7 +50,7 @@ fun fetchCoordinates(city: String, onSuccess: (Double, Double) -> Unit, onError:
                 val lat = String.format("%.3f", firstResult.lat.toDouble()).toDouble()
                 val lon = String.format("%.3f", firstResult.lon.toDouble()).toDouble()
 
-                onSuccess(lat, lon)
+                onSuccess(lon, lat)
             } else {
                 onError("No results found for $city")
             }

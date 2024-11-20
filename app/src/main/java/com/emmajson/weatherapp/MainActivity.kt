@@ -6,12 +6,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.emmajson.weatherapp.model.navigation.Navigation
 import com.emmajson.weatherapp.ui.theme.WeatherAppTheme
 import com.emmajson.weatherapp.viewmodel.WeatherViewModel
@@ -20,33 +18,23 @@ import com.emmajson.weatherapp.viewmodel.WeatherViewModelFactory
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // Obtain the ViewModel instance
         val viewModel: WeatherViewModel by viewModels {
             WeatherViewModelFactory(application)
         }
 
-        super.onCreate(savedInstanceState)
+        // Set up UI with Compose, observing ViewModel state
         setContent {
             WeatherAppTheme {
-                Surface(color = MaterialTheme.colorScheme.background) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
                     Navigation(vm = viewModel)
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    WeatherAppTheme {
-        Greeting("Android")
     }
 }
