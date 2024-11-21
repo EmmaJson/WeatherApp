@@ -20,12 +20,20 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.emmajson.weatherapp.ui.SearchViewModel
+import kotlinx.coroutines.launch
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.type
 
-@OptIn(ExperimentalMaterial3Api::class)
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun SearchScreen(
     navController: NavController,
@@ -33,9 +41,11 @@ fun SearchScreen(
     onCitySelected: (String) -> Unit
 ) {
     val searchText by searchViewModel.searchText.collectAsState()
-    val filteredCities by searchViewModel.cities.collectAsState()
+    val filteredCities by searchViewModel.displayCities.collectAsState()
     val isSearching by searchViewModel.isSearching.collectAsState()
     val favoriteCities by searchViewModel.favoriteCities.collectAsState()
+
+    val coroutineScope = rememberCoroutineScope()
 
 
     Scaffold(
@@ -65,19 +75,18 @@ fun SearchScreen(
                 onValueChange = { searchViewModel.onSearchTextChange(it) },
                 label = { Text("Enter city name") },
                 modifier = Modifier.fillMaxWidth()
+                    .onKeyEvent { event ->
+                        if (event.key == Key.Enter) {
+                            onCitySelected(searchText) // Trigger the search or selection
+                            navController.popBackStack() // Navigate back to the previous screen
+                            true // Indicate the event was handled
+                        } else {
+                            false // Let the system handle other key events
+                        }
+                    }
+                    .height(56.dp) // Fixed height for the TextField
+                    .fillMaxWidth()
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    onCitySelected(searchText) // Pass the text directly for free-text searches
-                    navController.popBackStack() // Navigate back to WeatherScreen
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Search")
-            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -95,10 +104,14 @@ fun SearchScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = city.name,
+                                text = city.toString(),
                                 style = MaterialTheme.typography.bodyLarge
                             )
-                            IconButton(onClick = { searchViewModel.toggleFavorite(city.name) }) {
+                            IconButton(onClick = {
+                                coroutineScope.launch {
+                                    searchViewModel.toggleFavorite(city.name)
+                                }
+                            }) {
                                 Icon(
                                     imageVector = if (favoriteCities.contains(city.name)) {
                                         Icons.Default.Favorite

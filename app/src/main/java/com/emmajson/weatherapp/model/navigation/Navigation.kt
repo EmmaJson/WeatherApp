@@ -22,7 +22,7 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun Navigation(vm: WeatherViewModel) {
+fun Navigation(vm: WeatherViewModel, svm: SearchViewModel) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = Screen.WeatherScreen.route) {
         composable(route = Screen.WeatherScreen.route) {
@@ -43,7 +43,7 @@ fun Navigation(vm: WeatherViewModel) {
         composable(Screen.SearchScreen.route) {
             SearchScreen(
                 navController = navController,
-                searchViewModel = SearchViewModel(),
+                searchViewModel = svm,
                 onCitySelected = { city ->
                     // Update WeatherViewModel with the selected city and navigate back
                     vm.setSearchedCity(city = city)
