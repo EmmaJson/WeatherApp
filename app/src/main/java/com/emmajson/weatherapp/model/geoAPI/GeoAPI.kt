@@ -8,7 +8,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Path
-import retrofit2.http.Query
 
 interface GeoAPI {
     @GET("{place}")
@@ -40,7 +39,7 @@ object RetrofitClient {
 fun fetchCoordinates(city: String, onSuccess: (Double, Double) -> Unit, onError: (String) -> Unit) {
     val geoApi = RetrofitClient.geoAPI
     val call = geoApi.getCoordinates(city)
-
+    Log.d("GeoAPI", "Full URL: ${call.request().url()}")
     call.enqueue(object : Callback<List<GeocodeResponse>> {
         override fun onResponse(call: Call<List<GeocodeResponse>>, response: Response<List<GeocodeResponse>>) {
             if (response.isSuccessful && response.body()?.isNotEmpty() == true) {
