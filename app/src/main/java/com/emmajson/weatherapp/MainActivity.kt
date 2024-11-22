@@ -13,6 +13,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.emmajson.weatherapp.model.navigation.Navigation
+import com.emmajson.weatherapp.ui.SettingsViewModel
+import com.emmajson.weatherapp.ui.SettingsViewModelFactory
 import com.emmajson.weatherapp.ui.theme.WeatherAppTheme
 import com.emmajson.weatherapp.viewmodel.WeatherViewModel
 import com.emmajson.weatherapp.viewmodel.WeatherViewModelFactory
@@ -32,6 +34,10 @@ class MainActivity : ComponentActivity() {
             SearchViewModelFactory(application)
         }
 
+        val settingsViewModel: SettingsViewModel by viewModels {
+            SettingsViewModelFactory(application)
+        }
+
         // Set up UI with Compose, observing ViewModel state
         setContent {
             WeatherAppTheme {
@@ -39,7 +45,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Navigation(vm = viewModel, svm=searchViewModel)
+                    Navigation(vm = viewModel, svm=searchViewModel, settingsVm = settingsViewModel)
                 }
             }
         }

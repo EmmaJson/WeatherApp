@@ -8,11 +8,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.emmajson.weatherapp.viewmodel.WeatherViewModel
+import com.emmajson.weatherapp.ui.SettingsViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: WeatherViewModel, navController: NavController) {
+fun SettingsScreen(viewModel: SettingsViewModel, navController: NavController) {
     val refreshRate by viewModel.refreshRate.collectAsState()
     val darkModeEnabled by viewModel.darkModeEnabled.collectAsState()
     val forecastDays by viewModel.forecastDays.collectAsState()

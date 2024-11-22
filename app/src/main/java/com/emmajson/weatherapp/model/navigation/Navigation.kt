@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
+import com.emmajson.weatherapp.ui.SettingsViewModel
 import com.emmajson.weatherapp.ui.screens.DetailScreen
 import com.emmajson.weatherapp.ui.screens.SearchScreen
 import com.emmajson.weatherapp.ui.screens.SettingsScreen
@@ -30,7 +31,7 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun Navigation(vm: WeatherViewModel, svm: SearchViewModel) {
+fun Navigation(vm: WeatherViewModel, svm: SearchViewModel, settingsVm: SettingsViewModel) {
     val darkModeEnabled by vm.darkModeEnabled.collectAsState()
 
     WeatherAppTheme(darkTheme = darkModeEnabled) {
@@ -65,7 +66,7 @@ fun Navigation(vm: WeatherViewModel, svm: SearchViewModel) {
 
             composable(Screen.SettingScreen.route) {
                 Crossfade(targetState = Screen.SettingScreen) {
-                    SettingsScreen(vm, navController)
+                    SettingsScreen(settingsVm, navController)
                 }
             }
         }
