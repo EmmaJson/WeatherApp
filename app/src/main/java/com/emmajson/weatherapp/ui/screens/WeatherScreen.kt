@@ -1,7 +1,6 @@
 package com.emmajson.weatherapp.ui.screens
 
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,13 +13,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.emmajson.weatherapp.model.navigation.Screen
 import com.emmajson.weatherapp.ui.screencomponents.WeatherItem
 import com.emmajson.weatherapp.ui.screencomponents.WeatherItemShimmer
-import com.emmajson.weatherapp.viewmodel.WeatherViewModel
+import com.emmajson.weatherapp.vm.WeatherViewModel
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 

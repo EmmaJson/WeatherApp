@@ -1,19 +1,17 @@
 package com.emmajson.weatherapp.model.navigation
 
-import SearchViewModel
-import com.emmajson.weatherapp.viewmodel.WeatherViewModel
+import com.emmajson.weatherapp.vm.SearchViewModel
+import com.emmajson.weatherapp.vm.WeatherViewModel
 import androidx.compose.animation.Crossfade
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import com.emmajson.weatherapp.ui.SettingsViewModel
+import com.emmajson.weatherapp.vm.SettingsViewModel
 import com.emmajson.weatherapp.ui.screens.DetailScreen
 import com.emmajson.weatherapp.ui.screens.SearchScreen
 import com.emmajson.weatherapp.ui.screens.SettingsScreen

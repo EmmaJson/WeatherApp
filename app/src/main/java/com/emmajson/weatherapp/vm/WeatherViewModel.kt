@@ -1,10 +1,7 @@
-package com.emmajson.weatherapp.viewmodel
+package com.emmajson.weatherapp.vm
 
 import android.annotation.SuppressLint
 import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -14,12 +11,10 @@ import androidx.lifecycle.viewModelScope
 import com.emmajson.weatherapp.model.data.SettingsRepository
 import com.emmajson.weatherapp.model.network.TimeSeries
 import com.emmajson.weatherapp.repository.WeatherRepository
-import com.emmajson.weatherapp.ui.SettingsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class WeatherViewModel(application: Application) : AndroidViewModel(application) {

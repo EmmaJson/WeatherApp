@@ -8,7 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.emmajson.weatherapp.ui.SettingsViewModel
+import com.emmajson.weatherapp.vm.SettingsViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)

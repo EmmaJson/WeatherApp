@@ -1,7 +1,7 @@
 package com.emmajson.weatherapp
 
-import SearchViewModel
-import SearchViewModelFactory
+import com.emmajson.weatherapp.vm.SearchViewModel
+import com.emmajson.weatherapp.vm.SearchViewModelFactory
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -13,11 +13,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.emmajson.weatherapp.model.navigation.Navigation
-import com.emmajson.weatherapp.ui.SettingsViewModel
-import com.emmajson.weatherapp.ui.SettingsViewModelFactory
+import com.emmajson.weatherapp.vm.SettingsViewModel
+import com.emmajson.weatherapp.vm.SettingsViewModelFactory
 import com.emmajson.weatherapp.ui.theme.WeatherAppTheme
-import com.emmajson.weatherapp.viewmodel.WeatherViewModel
-import com.emmajson.weatherapp.viewmodel.WeatherViewModelFactory
+import com.emmajson.weatherapp.vm.WeatherViewModel
+import com.emmajson.weatherapp.vm.WeatherViewModelFactory
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)

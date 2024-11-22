@@ -1,5 +1,6 @@
+package com.emmajson.weatherapp.vm
 
-
+import City
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.ViewModel
