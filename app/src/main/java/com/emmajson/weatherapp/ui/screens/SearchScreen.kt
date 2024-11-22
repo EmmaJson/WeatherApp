@@ -4,6 +4,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
@@ -31,6 +33,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.text.input.ImeAction
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
@@ -69,12 +72,13 @@ fun SearchScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // Search bar
+// Search bar
             TextField(
                 value = searchText,
                 onValueChange = { searchViewModel.onSearchTextChange(it) },
                 label = { Text("Enter city name") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .onKeyEvent { event ->
                         if (event.key == Key.Enter) {
                             onCitySelected(searchText) // Trigger the search or selection
@@ -84,9 +88,18 @@ fun SearchScreen(
                             false // Let the system handle other key events
                         }
                     }
-                    .height(56.dp) // Fixed height for the TextField
-                    .fillMaxWidth()
+                    .height(56.dp), // Fixed height for the TextField
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done // Set the action key to "Done" (or "Search")
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        onCitySelected(searchText) // Trigger the search or selection
+                        navController.popBackStack() // Navigate back to the previous screen
+                    }
+                )
             )
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
