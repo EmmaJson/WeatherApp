@@ -5,7 +5,7 @@ data class Parameter(
     val levelType: String,
     val level: Int,
     val unit: String,
-    var values: List<Double>
+    var values: List<Float>
 )
 
 data class TimeSeries(

@@ -1,5 +1,7 @@
 package com.emmajson.weatherapp
 
+import SearchViewModel
+import SearchViewModelFactory
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,8 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.emmajson.weatherapp.model.navigation.Navigation
-import com.emmajson.weatherapp.ui.SearchViewModel
-import com.emmajson.weatherapp.ui.SearchViewModelFactory
 import com.emmajson.weatherapp.ui.theme.WeatherAppTheme
 import com.emmajson.weatherapp.viewmodel.WeatherViewModel
 import com.emmajson.weatherapp.viewmodel.WeatherViewModelFactory

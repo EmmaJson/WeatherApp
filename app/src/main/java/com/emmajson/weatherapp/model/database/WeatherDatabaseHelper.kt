@@ -99,7 +99,7 @@ class WeatherDatabaseHelper(context: Context) : SQLiteOpenHelper(
                 val levelType = it.getString(it.getColumnIndexOrThrow(COLUMN_LEVEL_TYPE))
                 val level = it.getInt(it.getColumnIndexOrThrow(COLUMN_LEVEL))
                 val unit = it.getString(it.getColumnIndexOrThrow(COLUMN_UNIT))
-                val value = it.getDouble(it.getColumnIndexOrThrow(COLUMN_VALUE))
+                val value = it.getFloat(it.getColumnIndexOrThrow(COLUMN_VALUE))
 
                 Log.d("WeatherDatabaseHelper", "Fetched row: validTime=$validTime, name=$name")
 

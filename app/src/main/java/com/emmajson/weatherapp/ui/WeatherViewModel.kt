@@ -1,5 +1,6 @@
 package com.emmajson.weatherapp.viewmodel
 
+import android.annotation.SuppressLint
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -35,27 +36,53 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
         _selectedDayForecast.value = selectedForecast
     }
 
+    @SuppressLint("NewApi")
     fun interpolateHourlyData(hourlyForecasts: List<TimeSeries>, selectedDayDate: String): List<TimeSeries> {
         val filledForecasts = mutableListOf<TimeSeries>()
         var previousForecast: TimeSeries? = null
 
-        for (hour in 0 until 24) {
-            val targetHour = "%02d:00:00Z".format(hour)
-            val targetValidTime = "${selectedDayDate}T$targetHour"
+        // Sort forecasts to ensure chronological order
+        val sortedForecasts = hourlyForecasts.sortedBy { it.validTime }
 
-            val matchingForecast = hourlyForecasts.find { it.validTime == targetValidTime }
+        // Loop through all hours from 00:00 to 24:00 (inclusive)
+        for (hour in 0..23) {
+            val targetHour = if (hour == 24) "24:00:00Z" else "%02d:00:00Z".format(hour)
+            val targetValidTime = if (hour == 24) {
+                // Handle 24:00 as 00:00 of the next day
+                val nextDay = java.time.LocalDate.parse(selectedDayDate).plusDays(1).toString()
+                "${nextDay}T$targetHour"
+            } else {
+                "${selectedDayDate}T$targetHour"
+            }
+
+            // Find a matching forecast for the current hour
+            val matchingForecast = sortedForecasts.find { it.validTime == targetValidTime }
 
             if (matchingForecast != null) {
-                filledForecasts.add(matchingForecast)
-                if (previousForecast != null && hour - previousForecast.getHour() > 1) {
-                    filledForecasts.addAll(
-                        interpolateBetweenPoints(previousForecast, matchingForecast)
-                    )
+                // Interpolate for gaps between the previous and the current forecast
+                if (previousForecast != null && matchingForecast.getHour() - previousForecast.getHour() > 1) {
+                    val interpolatedPoints = interpolateBetweenPoints(previousForecast, matchingForecast)
+                    interpolatedPoints.forEach { point ->
+                        if (!filledForecasts.any { it.validTime == point.validTime }) {
+                            filledForecasts.add(point)
+                        }
+                    }
                 }
+
+                // Add the current forecast to the list
+                filledForecasts.add(matchingForecast)
                 previousForecast = matchingForecast
+            } else if (previousForecast != null) {
+                // No matching forecast: Extrapolate if we have a previous forecast
+                val extrapolatedPoint = previousForecast.copy(validTime = targetValidTime)
+                if (!filledForecasts.any { it.validTime == extrapolatedPoint.validTime }) {
+                    filledForecasts.add(extrapolatedPoint)
+                }
             }
         }
-        return filledForecasts
+
+        // Sort the list again to ensure proper ordering
+        return filledForecasts.sortedBy { it.validTime }
     }
 
     private fun interpolateBetweenPoints(start: TimeSeries, end: TimeSeries): List<TimeSeries> {
@@ -63,15 +90,25 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
         val startHour = start.getHour()
         val endHour = end.getHour()
 
+        // Debug: Validate start and end hours
+        println("Start hour: $startHour, End hour: $endHour")
+
+        if (startHour >= endHour) {
+            println("Invalid time range: startHour ($startHour) >= endHour ($endHour)")
+            return emptyList()
+        }
+
         for (hour in (startHour + 1) until endHour) {
             val fraction = (hour - startHour).toFloat() / (endHour - startHour).toFloat()
+            println("Interpolating for hour: $hour, fraction: $fraction")
 
             val interpolatedParameters = start.parameters.map { parameter ->
                 val endParameter = end.parameters.find { it.name == parameter.name }
                 if (parameter.name == "t" && endParameter != null) {
-                    val startValue = parameter.values.firstOrNull() ?: 0.0
-                    val endValue = endParameter.values.firstOrNull() ?: 0.0
+                    val startValue = parameter.values.firstOrNull()?.toFloat() ?: 0f
+                    val endValue = endParameter.values.firstOrNull()?.toFloat() ?: 0f
                     val interpolatedValue = startValue + fraction * (endValue - startValue)
+                    println("Parameter ${parameter.name}: startValue=$startValue, endValue=$endValue, interpolatedValue=$interpolatedValue")
                     parameter.copy(values = listOf(interpolatedValue))
                 } else {
                     parameter
@@ -79,8 +116,18 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
             }
 
             val interpolatedValidTime = "${start.validTime.substring(0, 11)}${"%02d:00:00Z".format(hour)}"
-            interpolatedPoints.add(start.copy(validTime = interpolatedValidTime, parameters = interpolatedParameters))
+            println("Interpolated validTime for hour $hour: $interpolatedValidTime")
+
+            interpolatedPoints.add(
+                start.copy(validTime = interpolatedValidTime, parameters = interpolatedParameters)
+            )
         }
+
+        // Debug: Log final interpolated points
+        interpolatedPoints.forEach {
+            println("Interpolated point: validTime=${it.validTime}")
+        }
+
         return interpolatedPoints
     }
 

@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.emmajson.weatherapp.R
 
 @Composable
-fun WeatherItem(date: String, minTemp: Double?, maxTemp: Double?, weatherSymbol: Double?, onClick: () -> Unit) {
+fun WeatherItem(date: String, minTemp: Float?, maxTemp: Float?, weatherSymbol: Float?, onClick: () -> Unit) {
 
     Row(
         modifier = Modifier
@@ -66,35 +66,35 @@ fun WeatherItem(date: String, minTemp: Double?, maxTemp: Double?, weatherSymbol:
 }
 
 // Helper function to get the correct drawable resource based on the weather symbol
-fun getWeatherIcon(symbol: Double?): Int {
+fun getWeatherIcon(symbol: Float?): Int {
     return when (symbol) {
-        1.0 -> R.drawable.ic_sunny                      // Clear sky
-        2.0 -> R.drawable.ic_sunny_cloudy               // Nearly clear sky
-        3.0 -> R.drawable.ic_partly_cloudy              // Variable cloudiness
-        4.0 -> R.drawable.ic_halfclear_sky              // Halfclear sky
-        5.0 -> R.drawable.ic_cloudy                     // Cloudy sky
-        6.0 -> R.drawable.ic_overcast                   // Overcast
-        7.0 -> R.drawable.ic_foggy                      // Fog
-        8.0 -> R.drawable.ic_light_rain_showers         // Light rain showers
-        9.0 -> R.drawable.ic_moderate_rain_showers      // Moderate rain showers
-        10.0 -> R.drawable.ic_heavy_rain_showers        // Heavy rain showers
-        11.0 -> R.drawable.ic_thunderstorm              // Thunderstorm
-        12.0 -> R.drawable.ic_light_sleet_showers       // Light sleet showers
-        13.0 -> R.drawable.ic_moderate_sleet_showers    // Moderate sleet showers
-        14.0 -> R.drawable.ic_heavy_sleet_showers       // Heavy sleet showers
-        15.0 -> R.drawable.ic_light_snow_showers        // Light snow showers
-        16.0 -> R.drawable.ic_moderate_snow_showers     // Moderate snow showers
-        17.0 -> R.drawable.ic_heavy_snow_showers        // Heavy snow showers
-        18.0 -> R.drawable.ic_light_rain                // Light rain
-        19.0 -> R.drawable.ic_moderate_rain             // Moderate rain
-        20.0 -> R.drawable.ic_heavy_rain                // Heavy rain
-        21.0 -> R.drawable.ic_thunder                   // Thunder
-        22.0 -> R.drawable.ic_light_sleet               // Light sleet
-        23.0 -> R.drawable.ic_moderate_sleet            // Moderate sleet
-        24.0 -> R.drawable.ic_heavy_sleet               // Heavy sleet
-        25.0 -> R.drawable.ic_light_snowfall            // Light snowfall
-        26.0 -> R.drawable.ic_moderate_snowfall         // Moderate snowfall
-        27.0 -> R.drawable.ic_heavy_snowfall            // Heavy snowfall
+        1.0f -> R.drawable.ic_sunny                      // Clear sky
+        2.0f -> R.drawable.ic_sunny_cloudy               // Nearly clear sky
+        3.0f -> R.drawable.ic_partly_cloudy              // Variable cloudiness
+        4.0f -> R.drawable.ic_halfclear_sky              // Halfclear sky
+        5.0f -> R.drawable.ic_cloudy                     // Cloudy sky
+        6.0f -> R.drawable.ic_overcast                   // Overcast
+        7.0f -> R.drawable.ic_foggy                      // Fog
+        8.0f -> R.drawable.ic_light_rain_showers         // Light rain showers
+        9.0f -> R.drawable.ic_moderate_rain_showers      // Moderate rain showers
+        10.0f -> R.drawable.ic_heavy_rain_showers        // Heavy rain showers
+        11.0f -> R.drawable.ic_thunderstorm              // Thunderstorm
+        12.0f -> R.drawable.ic_light_sleet_showers       // Light sleet showers
+        13.0f -> R.drawable.ic_moderate_sleet_showers    // Moderate sleet showers
+        14.0f -> R.drawable.ic_heavy_sleet_showers       // Heavy sleet showers
+        15.0f -> R.drawable.ic_light_snow_showers        // Light snow showers
+        16.0f -> R.drawable.ic_moderate_snow_showers     // Moderate snow showers
+        17.0f -> R.drawable.ic_heavy_snow_showers        // Heavy snow showers
+        18.0f -> R.drawable.ic_light_rain                // Light rain
+        19.0f -> R.drawable.ic_moderate_rain             // Moderate rain
+        20.0f -> R.drawable.ic_heavy_rain                // Heavy rain
+        21.0f -> R.drawable.ic_thunder                   // Thunder
+        22.0f -> R.drawable.ic_light_sleet               // Light sleet
+        23.0f -> R.drawable.ic_moderate_sleet            // Moderate sleet
+        24.0f -> R.drawable.ic_heavy_sleet               // Heavy sleet
+        25.0f -> R.drawable.ic_light_snowfall            // Light snowfall
+        26.0f -> R.drawable.ic_moderate_snowfall         // Moderate snowfall
+        27.0f -> R.drawable.ic_heavy_snowfall            // Heavy snowfall
         else -> R.drawable.ic_unknown                   // Default icon for unrecognized values
     }
 }

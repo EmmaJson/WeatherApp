@@ -5,10 +5,19 @@ import android.database.sqlite.SQLiteOpenHelper
 
 // Data class for City
 data class City(
-    val name: String,
-    val lat: Double,
-    val lon: Double
-)
+    val name: String
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is City) return false
+        return name == other.name
+    }
+
+    override fun hashCode(): Int {
+        return name.hashCode()
+    }
+}
+
 
 class CityDb(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
@@ -46,12 +55,10 @@ class CityDb(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, 
     }
 
     // Add or Update a City
-    fun addOrUpdateCity(name: String, lat: Double, lon: Double, isFavorite: Boolean = false, isLatest: Boolean = false) {
+    fun addOrUpdateCity(name: String,isFavorite: Boolean = false, isLatest: Boolean = false) {
         val db = this.writableDatabase
         val values = ContentValues().apply {
             put(COLUMN_NAME, name)
-            put(COLUMN_LAT, lat)
-            put(COLUMN_LON, lon)
             put(COLUMN_IS_FAVORITE, if (isFavorite) 1 else 0)
             put(COLUMN_IS_LATEST, if (isLatest) 1 else 0)
         }
@@ -74,53 +81,10 @@ class CityDb(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, 
         val favorites = mutableListOf<City>()
         while (cursor.moveToNext()) {
             val name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME))
-            val lat = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LAT))
-            val lon = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LON))
-            favorites.add(City(name, lat, lon))
+            favorites.add(City(name))
         }
         cursor.close()
         return favorites
-    }
-
-    // Save the Latest Searched City
-    fun saveLatestCity(name: String, lat: Double, lon: Double) {
-        val db = this.writableDatabase
-        // Clear any existing latest city
-        db.execSQL("UPDATE $TABLE_CITIES SET $COLUMN_IS_LATEST = 0")
-
-        // Insert or update the latest city
-        val values = ContentValues().apply {
-            put(COLUMN_NAME, name)
-            put(COLUMN_LAT, lat)
-            put(COLUMN_LON, lon)
-            put(COLUMN_IS_LATEST, 1)
-        }
-        db.insertWithOnConflict(TABLE_CITIES, null, values, SQLiteDatabase.CONFLICT_REPLACE)
-    }
-
-    // Get the Latest Searched City
-    fun getLatestCity(): City? {
-        val db = this.readableDatabase
-        val cursor = db.query(
-            TABLE_CITIES,
-            arrayOf(COLUMN_NAME, COLUMN_LAT, COLUMN_LON),
-            "$COLUMN_IS_LATEST = ?",
-            arrayOf("1"),
-            null,
-            null,
-            null
-        )
-
-        return if (cursor.moveToFirst()) {
-            val name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME))
-            val lat = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LAT))
-            val lon = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_LON))
-            cursor.close()
-            City(name, lat, lon)
-        } else {
-            cursor.close()
-            null
-        }
     }
 
     // Toggle Favorite Status of a City
@@ -139,11 +103,25 @@ class CityDb(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, 
         if (cursor.moveToFirst()) {
             val currentFavorite = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_FAVORITE)) == 1
             val newFavorite = if (currentFavorite) 0 else 1
+            println("CityDb.toggleFavoriteCity: Toggling $name, currentFavorite = $currentFavorite, newFavorite = $newFavorite")
             val values = ContentValues().apply {
                 put(COLUMN_IS_FAVORITE, newFavorite)
             }
             db.update(TABLE_CITIES, values, "$COLUMN_NAME = ?", arrayOf(name))
+        } else {
+            println("CityDb.toggleFavoriteCity: City $name not found in database.")
         }
         cursor.close()
+    }
+
+    // Method to delete all cities except favorites
+    fun deleteAllExceptFavorites() {
+        val db = this.writableDatabase
+        val rowsDeleted = db.delete(
+            TABLE_CITIES,
+            "$COLUMN_IS_FAVORITE = ?",
+            arrayOf("0")
+        )
+        println("CityDb.deleteAllExceptFavorites: Deleted $rowsDeleted rows (non-favorites)")
     }
 }

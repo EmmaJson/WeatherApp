@@ -7,7 +7,7 @@ import retrofit2.http.Path
 interface WeatherService {
     @GET("lon/{lon}/lat/{lat}/data.json")
     fun getWeather(
-        @Path("lon") lon: Double,
-        @Path("lat") lat: Double
+        @Path("lon") lon: Float,
+        @Path("lat") lat: Float
     ): Call<WeatherResponse>
 }

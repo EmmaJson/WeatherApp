@@ -1,6 +1,5 @@
 package com.emmajson.weatherapp.repository
 
-import CityDb
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -84,7 +83,7 @@ class WeatherRepository(private val context: Context) {
      * Fetches weather data from the network or database.
      * Returns a List<TimeSeries> or an empty list if something goes wrong.
      */
-    suspend fun getWeatherData(lon: Double, lat: Double): List<TimeSeries> {
+    suspend fun getWeatherData(lon: Float, lat: Float): List<TimeSeries> {
         return if (isNetworkAvailable()) {
             try {
                 fetchFromNetwork(lon = lon, lat = lat)
@@ -96,7 +95,7 @@ class WeatherRepository(private val context: Context) {
         }
     }
 
-    private suspend fun handleFallback(lon: Double, lat: Double, errorMessage: String): List<TimeSeries> {
+    private suspend fun handleFallback(lon: Float, lat: Float, errorMessage: String): List<TimeSeries> {
         Log.w("WeatherRepository", errorMessage)
         return fetchFromDatabase().also {
             if (it.isEmpty()) {
@@ -108,7 +107,7 @@ class WeatherRepository(private val context: Context) {
     /**
      * Fetches weather data using Retrofit.
      */
-    private suspend fun fetchFromNetwork(lon: Double, lat: Double): List<TimeSeries> {
+    private suspend fun fetchFromNetwork(lon: Float, lat: Float): List<TimeSeries> {
         val call = weatherService.getWeather(lon, lat)
         Log.d("WeatherRepository", "Full URL: ${call.request().url()}")
         return try {
