@@ -7,16 +7,21 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.emmajson.weatherapp.model.network.TimeSeries
 import com.emmajson.weatherapp.repository.WeatherRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 class WeatherViewModel(application: Application) : AndroidViewModel(application) {
 
     private val weatherRepository = WeatherRepository(application)
 
     val weatherData: LiveData<List<TimeSeries>> = weatherRepository.weatherData
+    val isDataFromCache: LiveData<Boolean> = weatherRepository.isDataFromCache
 
     // LiveData for error messages
     private val _errorMessage = MutableLiveData<String?>()
@@ -26,6 +31,25 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     val selectedDayForecast: StateFlow<TimeSeries?> = _selectedDayForecast
 
     val searchedCity = weatherRepository.searchedCity
+
+    init {
+        startPeriodicWeatherUpdates()
+    }
+
+    // Function to fetch weather data every 10 minutes
+    private fun startPeriodicWeatherUpdates() {
+        viewModelScope.launch(Dispatchers.IO) {
+            while (true) {
+                try {
+                    // Fetch data from repository
+                    weatherRepository.searchAndUpdateWeather(cityName = searchedCity.value.toString())
+                } catch (e: Exception) {
+                    e.printStackTrace() // Log errors
+                }
+                delay(10 * 60 * 1000) // Wait 10 minutes before next fetch
+            }
+        }
+    }
 
     fun setSearchedCity(city:String) {
         weatherRepository.setSearchedCity(city)
