@@ -29,30 +29,6 @@ class SearchViewModel(application: Application) : ViewModel() {
     val searchHistory = _searchHistory.asLiveData()
     val isSearching = _isSearching.asLiveData()
 
-    // Computed flow to filter favorite cities based on search text
-    val filteredFavoriteCities = _searchText.flatMapLatest { query ->
-        flow {
-            val filteredList = if (query.isEmpty()) {
-                _favoriteCities.value
-            } else {
-                _favoriteCities.value.filter { it.name.contains(query, ignoreCase = true) }
-            }
-            emit(filteredList)
-        }
-    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
-    // Computed flow to filter search history based on search text
-    val filteredSearchHistory = _searchText.flatMapLatest { query ->
-        flow {
-            val filteredList = if (query.isEmpty()) {
-                _searchHistory.value
-            } else {
-                _searchHistory.value.filter { it.name.contains(query, ignoreCase = true) }
-            }
-            emit(filteredList)
-        }
-    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
     init {
         loadDataFromRepository()
     }
@@ -83,7 +59,6 @@ class SearchViewModel(application: Application) : ViewModel() {
 
             // Update the StateFlow with the new list
             _searchHistory.value = updatedHistory.toList()
-            cityRepository.addCityIfNotExists(city)
             // Log the updated history
             Log.d("history", "Added ${city.name} to history. Updated history: ${_searchHistory.value}")
         }

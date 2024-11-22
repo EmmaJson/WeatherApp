@@ -28,6 +28,7 @@ import java.time.LocalDate
 @Composable
 fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
     // Observe the weather data from the ViewModel
+    val isDataFromCache by viewModel.isDataFromCache.observeAsState(initial = false)
     val weatherData by viewModel.weatherData.observeAsState()
     val errorMessage by viewModel.errorMessage.observeAsState()
     val searchedCity by viewModel.searchedCity.observeAsState() // For LiveData
@@ -49,6 +50,19 @@ fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
         }
     }
 
+    // Snackbar state to display messages
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Launch effect to display snackbar if data is from cache
+    LaunchedEffect(isDataFromCache) {
+        if (isDataFromCache) {
+            snackbarHostState.showSnackbar(
+                message = "Data loaded from cache",
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -62,7 +76,7 @@ fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
                     }
                 }
             )
-        }
+        }, snackbarHost = { SnackbarHost(hostState = snackbarHostState) } // Host to display Snackbar
     ) { paddingValues -> // Pass contentPadding as `paddingValues`
         Column(
             modifier = Modifier

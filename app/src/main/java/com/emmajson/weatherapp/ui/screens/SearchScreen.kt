@@ -100,7 +100,8 @@ fun SearchScreen(
                     .onKeyEvent { event ->
                         if (event.key == Key.Enter) {
                             onCitySelected(searchText.trim()) // Trigger the search or selection
-                            searchViewModel.addCityToSearchHistory(City(name=searchText))
+                            searchViewModel.addCityToSearchHistory(city = City(searchText, 0f, 0f))
+                            searchViewModel.onSearchTextChange("") // Clear the TextField
                             navController.popBackStack() // Navigate back to the previous screen
                             true // Indicate the event was handled
                         } else {
@@ -114,7 +115,8 @@ fun SearchScreen(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         onCitySelected(searchText) // Trigger the search or selection
-                        searchViewModel.addCityToSearchHistory(City(name=searchText))
+                        searchViewModel.addCityToSearchHistory(city = City(searchText, 0f, 0f))
+                        searchViewModel.onSearchTextChange("") // Clear the TextField
                         navController.popBackStack() // Navigate back to the previous screen
                     }
                 )
