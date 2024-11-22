@@ -1,5 +1,7 @@
 package com.emmajson.weatherapp.ui.screens
 
+import City
+import SearchViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -28,11 +31,8 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.emmajson.weatherapp.ui.SearchViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.input.ImeAction
 
 
@@ -43,10 +43,12 @@ fun SearchScreen(
     searchViewModel: SearchViewModel,
     onCitySelected: (String) -> Unit
 ) {
-    val searchText by searchViewModel.searchText.collectAsState()
-    val filteredCities by searchViewModel.displayCities.collectAsState()
-    val isSearching by searchViewModel.isSearching.collectAsState()
-    val favoriteCities by searchViewModel.favoriteCities.collectAsState()
+    println("SearchScreen: Composing UI with new favoriteCities state")
+
+    val searchText by searchViewModel.searchText.observeAsState("")
+    val favoriteCities by searchViewModel.favoriteCities.observeAsState(emptyList())
+    val searchHistory by searchViewModel.filteredSearchHistory.collectAsState(emptyList())
+    val isSearching by searchViewModel.isSearching.observeAsState(false)
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -72,6 +74,22 @@ fun SearchScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
+            // Clear Cache Button
+            Button(
+                onClick = {
+                    println("SearchScreen: Clear Cache button clicked")
+                    coroutineScope.launch {
+                        searchViewModel.clearCache()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text("Clear Cache")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 // Search bar
             TextField(
                 value = searchText,
@@ -81,7 +99,8 @@ fun SearchScreen(
                     .fillMaxWidth()
                     .onKeyEvent { event ->
                         if (event.key == Key.Enter) {
-                            onCitySelected(searchText) // Trigger the search or selection
+                            onCitySelected(searchText.trim()) // Trigger the search or selection
+                            searchViewModel.addCityToSearchHistory(City(name=searchText))
                             navController.popBackStack() // Navigate back to the previous screen
                             true // Indicate the event was handled
                         } else {
@@ -95,6 +114,7 @@ fun SearchScreen(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         onCitySelected(searchText) // Trigger the search or selection
+                        searchViewModel.addCityToSearchHistory(City(name=searchText))
                         navController.popBackStack() // Navigate back to the previous screen
                     }
                 )
@@ -107,32 +127,83 @@ fun SearchScreen(
             if (isSearching) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(filteredCities) { city ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp)
-                                .clickable { onCitySelected(city.name) },
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = city.toString(),
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            IconButton(onClick = {
-                                coroutineScope.launch {
-                                    searchViewModel.toggleFavorite(city.name)
-                                }
-                            }) {
-                                Icon(
-                                    imageVector = if (favoriteCities.contains(city.name)) {
-                                        Icons.Default.Favorite
-                                    } else {
-                                        Icons.Default.FavoriteBorder
+
+                // Display Favorite Cities
+                if (favoriteCities.isNotEmpty()) {
+                    Text(
+                        text = "Favorites")
+                    LazyColumn {
+                        items(favoriteCities) { city ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                                    .clickable {
+                                        onCitySelected(city.name)
+                                        navController.popBackStack()
                                     },
-                                    contentDescription = "Toggle Favorite"
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = city.name,
+                                    style = MaterialTheme.typography.bodyLarge
                                 )
+                                IconButton(onClick = {
+                                    coroutineScope.launch {
+                                        searchViewModel.toggleFavorite(city)
+                                    }
+                                }) {
+                                    Icon(
+                                        imageVector = if (favoriteCities.contains(city)) {
+                                            Icons.Default.Favorite
+                                        } else {
+                                            Icons.Default.FavoriteBorder
+                                        },
+                                        contentDescription = "Toggle Favorite"
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (searchHistory.isNotEmpty()) {
+                    Text(
+                        text = "Search History"
+                    )
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(searchHistory) { city ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                                    .clickable {
+                                        onCitySelected(city.name)
+                                        navController.popBackStack()
+                                    },
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = city.name,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                IconButton(onClick = {
+                                    println("SearchScreen: Heart icon clicked for ${city.name}")
+                                    coroutineScope.launch {
+                                        searchViewModel.toggleFavorite(city)
+                                    }
+                                }) {
+                                    Icon(
+                                        imageVector = if (favoriteCities.contains(city)) {
+                                            Icons.Default.Favorite
+                                        } else {
+                                            Icons.Default.FavoriteBorder
+                                        },
+                                        contentDescription = "Toggle Favorite"
+                                    )
+                                }
                             }
                         }
                     }

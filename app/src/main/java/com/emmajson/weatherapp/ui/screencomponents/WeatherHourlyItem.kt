@@ -20,7 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun WeatherHourlyItem(time: String, temperature: Double?, weatherSymbol: Double?) {
+fun WeatherHourlyItem(time: String, temperature: Float?, weatherSymbol: Float?) {
 
     Row(
         modifier = Modifier

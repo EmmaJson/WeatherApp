@@ -38,7 +38,7 @@ object RetrofitClient {
 
 
 // Function to Fetch Coordinates Using GeoAPI
-fun fetchCoordinates(city: String, onSuccess: (Double, Double) -> Unit, onError: (String) -> Unit) {
+fun fetchCoordinates(city: String, onSuccess: (Float, Float) -> Unit, onError: (String) -> Unit) {
     val geoApi = RetrofitClient.geoAPI
     val call = geoApi.getCoordinates(city)
     Log.d("GeoAPI", "Full URL: ${call.request().url()}")
@@ -48,8 +48,8 @@ fun fetchCoordinates(city: String, onSuccess: (Double, Double) -> Unit, onError:
                 val firstResult = response.body()!![0]
 
                 // Convert and round coordinates to 3 decimal places
-                /*val lat = String.format("%.3f", firstResult.lat.toDouble()).toDouble()
-                val lon = String.format("%.3f", firstResult.lon.toDouble()).toDouble()
+                /*val lat = String.format("%.3f", firstResult.lat.toFloat()).toFloat()
+                val lon = String.format("%.3f", firstResult.lon.toFloat()).toFloat()
                 */
                 val lat = parseCoordinate(firstResult.lat)
                 val lon = parseCoordinate(firstResult.lon)
@@ -61,13 +61,13 @@ fun fetchCoordinates(city: String, onSuccess: (Double, Double) -> Unit, onError:
             }
         }
 
-        fun parseCoordinate(input: String): Double {
+        fun parseCoordinate(input: String): Float {
             // Replace comma with dot to ensure proper parsing of decimal separator
             val cleanedInput = input.replace(",", ".")
-            // Parse the coordinate as a Double
-            val parsedValue = cleanedInput.toDouble()
+            // Parse the coordinate as a Float
+            val parsedValue = cleanedInput.toFloat()
             // Round to 3 decimal places to maintain three decimal precision
-            val roundedValue = String.format(Locale.US, "%.3f", parsedValue).toDouble()
+            val roundedValue = String.format(Locale.US, "%.3f", parsedValue).toFloat()
             return roundedValue
         }
 

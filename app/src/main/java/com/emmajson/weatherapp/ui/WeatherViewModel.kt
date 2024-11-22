@@ -69,8 +69,8 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
             val interpolatedParameters = start.parameters.map { parameter ->
                 val endParameter = end.parameters.find { it.name == parameter.name }
                 if (parameter.name == "t" && endParameter != null) {
-                    val startValue = parameter.values.firstOrNull() ?: 0.0
-                    val endValue = endParameter.values.firstOrNull() ?: 0.0
+                    val startValue = parameter.values.firstOrNull()?.toFloat() ?: 0f
+                    val endValue = endParameter.values.firstOrNull()?.toFloat() ?: 0f
                     val interpolatedValue = startValue + fraction * (endValue - startValue)
                     parameter.copy(values = listOf(interpolatedValue))
                 } else {

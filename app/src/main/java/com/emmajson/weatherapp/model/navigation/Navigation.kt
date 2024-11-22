@@ -1,5 +1,6 @@
 package com.emmajson.weatherapp.model.navigation
 
+import SearchViewModel
 import com.emmajson.weatherapp.viewmodel.WeatherViewModel
 import androidx.compose.animation.Crossfade
 import androidx.compose.runtime.Composable
@@ -8,7 +9,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.emmajson.weatherapp.ui.SearchViewModel
 import com.emmajson.weatherapp.ui.screens.DetailScreen
 import com.emmajson.weatherapp.ui.screens.SearchScreen
 import com.emmajson.weatherapp.ui.screens.WeatherScreen
@@ -46,7 +46,7 @@ fun Navigation(vm: WeatherViewModel, svm: SearchViewModel) {
                 searchViewModel = svm,
                 onCitySelected = { city ->
                     // Update WeatherViewModel with the selected city and navigate back
-                    vm.setSearchedCity(city = city)
+                    vm.setSearchedCity(city = city.toString())
                 }
             )
         }
