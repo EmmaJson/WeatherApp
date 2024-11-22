@@ -125,35 +125,41 @@ fun SearchScreen(
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             } else {
                 if (favoriteCities.isNotEmpty()) {
-                    Text("Favorites", style = MaterialTheme.typography.bodyLarge)
-                    LazyColumn {
-                        items(favoriteCities) { city ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp)
-                                    .clickable {
-                                        onCitySelected(city.name)
-                                        navController.popBackStack()
-                                    },
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = city.name,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onBackground
-                                )
-                                IconButton(onClick = {
-                                    coroutineScope.launch { searchViewModel.toggleFavorite(city) }
-                                }) {
-                                    Icon(
-                                        imageVector = if (favoriteCities.contains(city)) {
-                                            Icons.Default.Favorite
-                                        } else {
-                                            Icons.Default.FavoriteBorder
+                    val filteredSearch = favoriteCities
+                        .filter { it.name.contains(searchText.trim(), ignoreCase = true) } // Filter matching cities
+                        .sortedBy { it.name } // Sort alphabetically
+                    if(filteredSearch.isNotEmpty()) {
+                        Text("Favorites", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(8.dp))
+                        LazyColumn {
+                            items(filteredSearch.sortedBy { it.name }) { city ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp)
+                                        .clickable {
+                                            onCitySelected(city.name)
+                                            navController.popBackStack()
                                         },
-                                        contentDescription = "Toggle Favorite"
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = city.name,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onBackground
                                     )
+                                    IconButton(onClick = {
+                                        coroutineScope.launch { searchViewModel.toggleFavorite(city) }
+                                    }) {
+                                        Icon(
+                                            imageVector = if (favoriteCities.contains(city)) {
+                                                Icons.Default.Favorite
+                                            } else {
+                                                Icons.Default.FavoriteBorder
+                                            },
+                                            contentDescription = "Toggle Favorite"
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -163,35 +169,41 @@ fun SearchScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (searchHistory.isNotEmpty()) {
-                    Text("Search History", style = MaterialTheme.typography.bodyLarge)
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        items(searchHistory) { city ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp)
-                                    .clickable {
-                                        onCitySelected(city.name)
-                                        navController.popBackStack()
-                                    },
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = city.name,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onBackground
-                                )
-                                IconButton(onClick = {
-                                    coroutineScope.launch { searchViewModel.toggleFavorite(city) }
-                                }) {
-                                    Icon(
-                                        imageVector = if (favoriteCities.contains(city)) {
-                                            Icons.Default.Favorite
-                                        } else {
-                                            Icons.Default.FavoriteBorder
+                    val filteredSearch = searchHistory
+                        .filter { it.name.contains(searchText.trim(), ignoreCase = true) } // Filter matching cities
+                        .sortedBy { it.name } // Sort alphabetically
+                    if(filteredSearch.isNotEmpty()) {
+                        Text("Search History", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(8.dp))
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            items(filteredSearch.sortedBy { it.name }) { city ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp)
+                                        .clickable {
+                                            onCitySelected(city.name)
+                                            navController.popBackStack()
                                         },
-                                        contentDescription = "Toggle Favorite"
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = city.name,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onBackground
                                     )
+                                    IconButton(onClick = {
+                                        coroutineScope.launch { searchViewModel.toggleFavorite(city) }
+                                    }) {
+                                        Icon(
+                                            imageVector = if (favoriteCities.contains(city)) {
+                                                Icons.Default.Favorite
+                                            } else {
+                                                Icons.Default.FavoriteBorder
+                                            },
+                                            contentDescription = "Toggle Favorite"
+                                        )
+                                    }
                                 }
                             }
                         }
