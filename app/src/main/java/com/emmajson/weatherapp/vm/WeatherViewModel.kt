@@ -8,7 +8,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.emmajson.weatherapp.model.data.SettingsRepository
 import com.emmajson.weatherapp.model.network.TimeSeries
 import com.emmajson.weatherapp.repository.WeatherRepository
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +19,6 @@ import kotlinx.coroutines.launch
 class WeatherViewModel(application: Application) : AndroidViewModel(application) {
 
     private val weatherRepository = WeatherRepository(application)
-    private val settingsRepository = SettingsRepository(application)
     private val settingsViewModel = SettingsViewModel(application)
 
     val weatherData: LiveData<List<TimeSeries>> = weatherRepository.weatherData
@@ -43,7 +41,7 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
         startPeriodicWeatherUpdates()
     }
 
-    // Function to fetch weather data every 10 minutes
+    // Function to fetch weather data every X minutes
     private fun startPeriodicWeatherUpdates() {
         viewModelScope.launch(Dispatchers.IO) {
             while (true) {

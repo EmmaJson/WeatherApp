@@ -28,11 +28,13 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import androidx.compose.ui.text.input.ImeAction
-
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -89,9 +91,21 @@ fun SearchScreen(
                 value = searchText,
                 onValueChange = { searchViewModel.onSearchTextChange(it) },
                 label = { Text("Enter city name") },
+
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(56.dp)
+                    .onKeyEvent { event ->
+                        if (event.key == Key.Enter) {
+                            onCitySelected(searchText.trim())
+                            searchViewModel.addCityToSearchHistory(City(searchText, 0f, 0f))
+                            searchViewModel.onSearchTextChange("")
+                            navController.popBackStack()
+                            true // Indicate the event was handled
+                        } else {
+                            false // Let the system handle other key events
+                        }
+                    },
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = ImeAction.Done
                 ),

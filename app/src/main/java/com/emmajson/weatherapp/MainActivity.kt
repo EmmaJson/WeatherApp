@@ -24,21 +24,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Obtain the ViewModel instance
         val viewModel: WeatherViewModel by viewModels {
             WeatherViewModelFactory(application)
         }
-
-        // Obtain the SearchViewModel instance
         val searchViewModel: SearchViewModel by viewModels {
             SearchViewModelFactory(application)
         }
-
         val settingsViewModel: SettingsViewModel by viewModels {
             SettingsViewModelFactory(application)
         }
 
-        // Set up UI with Compose, observing ViewModel state
         setContent {
             WeatherAppTheme {
                 Surface(
