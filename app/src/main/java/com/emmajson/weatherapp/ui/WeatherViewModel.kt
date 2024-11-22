@@ -2,23 +2,29 @@ package com.emmajson.weatherapp.viewmodel
 
 import android.annotation.SuppressLint
 import android.app.Application
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.emmajson.weatherapp.model.data.SettingsRepository
 import com.emmajson.weatherapp.model.network.TimeSeries
 import com.emmajson.weatherapp.repository.WeatherRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class WeatherViewModel(application: Application) : AndroidViewModel(application) {
 
     private val weatherRepository = WeatherRepository(application)
+    private val settingsRepository = SettingsRepository(application)
 
     val weatherData: LiveData<List<TimeSeries>> = weatherRepository.weatherData
     val isDataFromCache: LiveData<Boolean> = weatherRepository.isDataFromCache
@@ -29,6 +35,13 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
 
     private val _selectedDayForecast = MutableStateFlow<TimeSeries?>(null)
     val selectedDayForecast: StateFlow<TimeSeries?> = _selectedDayForecast
+
+    private val _refreshRate = MutableStateFlow(10) // Default
+    val refreshRate: StateFlow<Int> = _refreshRate.asStateFlow()
+
+    private val _darkModeEnabled = MutableStateFlow(false) // Default
+    val darkModeEnabled: StateFlow<Boolean> = _darkModeEnabled.asStateFlow()
+
 
     val searchedCity = weatherRepository.searchedCity
 
@@ -46,7 +59,7 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                 } catch (e: Exception) {
                     e.printStackTrace() // Log errors
                 }
-                delay(10 * 60 * 1000) // Wait 10 minutes before next fetch
+                delay(60*1000 * refreshRate.value.toLong()) // Wait 1 * refrate minutes before next fetch
             }
         }
     }
@@ -157,6 +170,54 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
 
     private fun TimeSeries.getHour(): Int {
         return validTime.substring(11, 13).toInt()
+    }
+
+    fun updateRefreshRate(rate: Int) {
+        viewModelScope.launch {
+            _refreshRate.value = rate // Immediate UI update
+            settingsRepository.setRefreshRate(rate)
+        }
+    }
+    init {
+        viewModelScope.launch {
+            settingsRepository.refreshRate.collect {
+                println("Retrieved refresh rate: $it")
+                _refreshRate.value = it
+            }
+        }
+    }
+
+    fun updateDarkMode(enabled: Boolean) {
+        viewModelScope.launch {
+            _darkModeEnabled.value = enabled // Immediate UI update
+            println("Updating dark mode: $enabled")
+            settingsRepository.setDarkMode(enabled) // Save to DataStore
+        }
+    }
+    init {
+        viewModelScope.launch {
+            settingsRepository.darkModeEnabled.collect { isDarkMode ->
+                println("Retrieved dark mode: $isDarkMode")
+                _darkModeEnabled.value = isDarkMode
+            }
+        }
+    }
+
+    private val _forecastDays = MutableStateFlow(7) // Default to 7 days
+    val forecastDays: StateFlow<Int> = _forecastDays.asStateFlow()
+    fun updateForecastDays(days: Int) {
+        viewModelScope.launch {
+            _forecastDays.value = days
+            settingsRepository.setForecastDays(days)
+        }
+    }
+    init {
+        viewModelScope.launch {
+            settingsRepository.forecastDays.collect { days ->
+                println("Retrieved forecast days: $days")
+                _forecastDays.value = days
+            }
+        }
     }
 }
 

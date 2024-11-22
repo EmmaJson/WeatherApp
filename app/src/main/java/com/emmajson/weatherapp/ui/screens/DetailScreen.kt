@@ -58,7 +58,7 @@ fun DetailScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF0089FF))
+                .background(MaterialTheme.colorScheme.primary)
                 .padding(paddingValues)
         ) {
             weatherData?.let { timeSeries ->
@@ -73,7 +73,7 @@ fun DetailScreen(
                     Text(
                         text = "No data available for the selected day.",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                     return@let
                 }
@@ -82,17 +82,7 @@ fun DetailScreen(
                     it.validTime.startsWith(selectedDayDate)
                 }
 
-                Log.d("DetailScreen", "Hourly Forecasts Before Interpolation: $hourlyForecasts")
-
                 val filledHourlyForecasts = viewModel.interpolateHourlyData(hourlyForecasts, selectedDayDate)
-
-                Log.d(
-                    "DetailScreen",
-                    "Hourly Forecasts After Interpolation: $filledHourlyForecasts"
-                )
-
-
-
 
                 LazyColumn(
                     modifier = Modifier
@@ -102,10 +92,8 @@ fun DetailScreen(
                 ) {
                     items(filledHourlyForecasts) { forecast ->
                         val time = forecast.validTime.substring(11, 16)
-                        val temperature =
-                            forecast.parameters.find { it.name == "t" }?.values?.firstOrNull()
-                        val weatherSymbol =
-                            forecast.parameters.find { it.name == "Wsymb2" }?.values?.firstOrNull()
+                        val temperature = forecast.parameters.find { it.name == "t" }?.values?.firstOrNull()
+                        val weatherSymbol = forecast.parameters.find { it.name == "Wsymb2" }?.values?.firstOrNull()
 
                         WeatherHourlyItem(
                             time = time,
@@ -117,8 +105,9 @@ fun DetailScreen(
             } ?: Text(
                 text = "Loading data...",
                 style = MaterialTheme.typography.bodyLarge,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
     }
 }
+

@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -32,8 +33,11 @@ fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
     val weatherData by viewModel.weatherData.observeAsState()
     val errorMessage by viewModel.errorMessage.observeAsState()
     val searchedCity by viewModel.searchedCity.observeAsState() // For LiveData
+
+    val forecastDays by viewModel.forecastDays.collectAsState()
     var loadedItemsCount by remember { mutableStateOf(0) }
-    val totalItems = 7
+    val totalItems = forecastDays
+
 
     LaunchedEffect(weatherData) {
         if (viewModel.searchedCity.value.isNullOrEmpty()) {
@@ -42,7 +46,7 @@ fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
             viewModel.setSearchedCity(searchedCity.toString())
         }
     }
-    // Gradually increase the loaded items count with a delay
+
     LaunchedEffect(weatherData) {
         while (loadedItemsCount < (weatherData?.size ?: 0)) {
             delay(300)
@@ -50,10 +54,8 @@ fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
         }
     }
 
-    // Snackbar state to display messages
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Launch effect to display snackbar if data is from cache
     LaunchedEffect(isDataFromCache) {
         if (isDataFromCache) {
             snackbarHostState.showSnackbar(
@@ -68,53 +70,38 @@ fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
             TopAppBar(
                 title = { Text(searchedCity.toString()) },
                 actions = {
+                    IconButton(onClick = { navController.navigate(Screen.SettingScreen.route) }) {
+                        Icon(imageVector = Icons.Default.Settings, contentDescription = "Settings")
+                    }
                     IconButton(onClick = { navController.navigate(Screen.SearchScreen.route) }) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search"
-                        )
+                        Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
                     }
                 }
             )
-        }, snackbarHost = { SnackbarHost(hostState = snackbarHostState) } // Host to display Snackbar
-    ) { paddingValues -> // Pass contentPadding as `paddingValues`
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF0089FF))
-                .padding(paddingValues) // Apply the content padding
-                .padding(16.dp) // Add additional padding
+                .background(MaterialTheme.colorScheme.primary)
+                .padding(paddingValues)
+                .padding(16.dp)
         ) {
             Text(
-                text = "7-Day Forecast",
+                text = "$forecastDays-Day Forecast",
                 style = MaterialTheme.typography.headlineSmall,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Check if weather data is loaded
             weatherData?.let { timeSeries ->
-                Log.d("WeatherScreen", "weatherData: $timeSeries")
-
-                if (timeSeries.isEmpty()) {
-                    Log.d("WeatherScreen", "timeSeries is empty")
-                    Text(
-                        text = "No data available",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.White
-                    )
-                    return@let
-                }
-
-                // Define the start date and filter data for the next 7 days
-                //val currentDate = LocalDate.of(2021, 11, 3)
                 val currentDate = LocalDate.now()
                 val filteredTimeSeries = timeSeries.filter {
                     val forecastDate = LocalDate.parse(it.validTime.substring(0, 10))
-                    !forecastDate.isBefore(currentDate) && forecastDate.isBefore(currentDate.plusDays(7))
+                    !forecastDate.isBefore(currentDate) && forecastDate.isBefore(currentDate.plusDays(forecastDays.toLong()))
                 }
 
-                // Group the filtered data by date and aggregate temperature data
                 val dailyForecasts = filteredTimeSeries.groupBy {
                     it.validTime.substring(0, 10)
                 }.mapValues { (_, times) ->
@@ -128,7 +115,6 @@ fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
                     Triple(minTemp, maxTemp, dominantSymbol)
                 }
 
-                // Display the weather forecast in a LazyColumn with incremental loading
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
@@ -140,7 +126,6 @@ fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
                         if (index < loadedItemsCount) {
                             WeatherItem(date, forecast.first, forecast.second, forecast.third) {
                                 viewModel.setSelectedDayForecast(index)
-                                Log.d("WeatherScreen", "Navigating to DetailScreen with dayIndex: $index")
                                 navController.navigate(Screen.DetailScreen.createRoute(index))
                             }
                         } else {
@@ -149,11 +134,10 @@ fun WeatherScreen(viewModel: WeatherViewModel, navController: NavController) {
                     }
                 }
             } ?: run {
-                // Show loading text if data is not yet available
                 Text(
                     text = "Loading data...",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }
